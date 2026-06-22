@@ -1,7 +1,7 @@
 package com.watertribe.todo.repository;
 
-import package com.watertribe.todo.entity.MainTodo;
-import package com.watertribe.todo.entity.User;
+import com.watertribe.todo.entity.MainTodo;
+import com.watertribe.todo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
