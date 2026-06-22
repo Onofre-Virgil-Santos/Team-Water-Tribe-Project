@@ -1,66 +1,64 @@
 package com.watertribe.todo.controller;
 
-import com.watertribe.todo.entity.MainTodo;
-import com.watertribe.todo.entity.SubTask;
-import com.watertribe.todo.repository.MainTodoRepository;
-import com.watertribe.todo.repository.SubTaskRepository;
-import org.springframework.http.ResponseEntity;
+import com.watertribe.todo.dto.SubTaskRequest;
+import com.watertribe.todo.dto.SubTaskResponse;
+import com.watertribe.todo.service.SubTaskService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/todos/{mainTodoId}/subtasks")
+@RequestMapping("/api/main-todos/{mainTodoId}/subtasks")
+@RequiredArgsConstructor
 public class SubTaskController {
 
-    private final SubTaskRepository subTaskRepository;
-    private final MainTodoRepository mainTodoRepository;
+    private final SubTaskService subTaskService;
 
-    public SubTaskController(SubTaskRepository subTaskRepository,
-                             MainTodoRepository mainTodoRepository) {
-        this.subTaskRepository = subTaskRepository;
-        this.mainTodoRepository = mainTodoRepository;
+    @PostMapping
+    public SubTaskResponse createSubTask(
+            @PathVariable Long mainTodoId,
+            @RequestBody SubTaskRequest request,
+            Authentication authentication
+    ) {
+        return subTaskService.createSubTask(mainTodoId, request, authentication);
     }
 
     @GetMapping
-    public ResponseEntity<List<SubTask>> getAll(@PathVariable Long mainTodoId) {
-        MainTodo mainTodo = mainTodoRepository.findById(mainTodoId)
-        .orElseThrow(() -> new RuntimeException("MainTodo not found"));
-        return ResponseEntity.ok(subTaskRepository.findByMainTodo(mainTodo));
+    public List<SubTaskResponse> getAllSubTasks(
+            @PathVariable Long mainTodoId,
+            Authentication authentication
+    ) {
+        return subTaskService.getAllSubTasks(mainTodoId, authentication);
     }
 
-    @PostMapping
-    public ResponseEntity<SubTask> create(@PathVariable Long mainTodoId,
-                                          @RequestBody SubTask subTask) {
-        MainTodo mainTodo = mainTodoRepository.findById(mainTodoId)
-                .orElseThrow(() -> new RuntimeException("MainTodo not found"));
-        subTask.setMainTodo(mainTodo);
-        return ResponseEntity.ok(subTaskRepository.save(subTask));
+    @GetMapping("/{id}")
+    public SubTaskResponse getSubTaskById(
+            @PathVariable Long mainTodoId,
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return subTaskService.getSubTaskById(mainTodoId, id, authentication);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubTask> update(@PathVariable Long mainTodoId,
-                                          @PathVariable Long id,
-                                          @RequestBody SubTask updated) {
-        MainTodo mainTodo = mainTodoRepository.findById(mainTodoId)
-                .orElseThrow(() -> new RuntimeException("MainTodo not found"));
-        SubTask subTask = subTaskRepository.findByIdAndMainTodo(id, mainTodo)
-                .orElseThrow(() -> new RuntimeException("SubTask not found"));
-        subTask.setTask(updated.getTask());
-        subTask.setDescription(updated.getDescription());
-        subTask.setCompleted(updated.isCompleted());
-        return ResponseEntity.ok(subTaskRepository.save(subTask));
+    public SubTaskResponse updateSubTask(
+            @PathVariable Long mainTodoId,
+            @PathVariable Long id,
+            @RequestBody SubTaskRequest request,
+            Authentication authentication
+    ) {
+        return subTaskService.updateSubTask(mainTodoId, id, request, authentication);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long mainTodoId,
-                                       @PathVariable Long id) {
-        MainTodo mainTodo = mainTodoRepository.findById(mainTodoId)
-                .orElseThrow(() -> new RuntimeException("MainTodo not found"));
-        SubTask subTask = subTaskRepository.findByIdAndMainTodo(id, mainTodo)
-                .orElseThrow(() -> new RuntimeException("SubTask not found"));
-        subTaskRepository.delete(subTask);
-        return ResponseEntity.noContent().build();
+    public String deleteSubTask(
+            @PathVariable Long mainTodoId,
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        subTaskService.deleteSubTask(mainTodoId, id, authentication);
+        return "Sub task deleted successfully";
     }
 }
