@@ -20,6 +20,7 @@ export class Register {
   // which is what enables (ngSubmit) to fire when the form is submitted.
   // Each FormControl inside holds the value for one input field (initialized to '').
   registerForm = new FormGroup({
+    email: new FormControl(''),
     username: new FormControl(''),
     password: new FormControl(''),
   });
@@ -36,6 +37,7 @@ export class Register {
 
     // Build the request body from the form values
     const body = {
+      email: this.registerForm.value.email,
       username: this.registerForm.value.username,
       password: this.registerForm.value.password,
     };
@@ -49,7 +51,7 @@ export class Register {
     //              rather than just the parsed body
     //     responseType: 'text' tells Angular to treat the response body as plain text
     //                   instead of attempting to parse it as JSON
-    this.http.post('http://localhost:8080/register', body, { observe: 'response', responseType: 'text' }).subscribe({
+    this.http.post<any>('http://localhost:8080/register', body).subscribe({
       // .subscribe() triggers the HTTP request and lets us handle the result.
       // http.post() returns an Observable — it won't execute until subscribed to.
       // The object passed to subscribe() is an Observer with callback functions:
