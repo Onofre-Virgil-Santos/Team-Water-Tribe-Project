@@ -1,0 +1,36 @@
+.todo-page {
+  text-align: center;
+  padding-top: 80px;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 900;
+  text-shadow: 2px 2px 4px gray;
+  margin-bottom: 50px;
+}
+
+.add-box {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+input {
+  width: 520px;
+  height: 45px;
+  border: 3px solid #7b22ff;
+  font-size: 20px;
+  padding: 0 10px;
+}
+
+button {
+  width: 55px;
+  height: 55px;
+  background-color: #7b22ff;
+  color: white;
+  border: none;
+  font-size: 36px;
+  font-weight: bold;
+}
