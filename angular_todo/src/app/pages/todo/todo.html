@@ -1,0 +1,13 @@
+<div class="todo-page">
+  <h1>TODO LIST</h1>
+
+  <div class="add-box">
+    <input [(ngModel)]="newTodoTitle" type="text" placeholder="Enter todo" />
+    <button (click)="addTodo()">+</button>
+  </div>
+  <div class="todo-list">
+  <div class="todo-item" *ngFor="let todo of todos">
+    {{ todo }}
+  </div>
+</div>
+</div>
