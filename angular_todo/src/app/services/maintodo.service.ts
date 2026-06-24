@@ -8,7 +8,7 @@ import { MainTodo } from '../models/maintodo.model';
 })
 export class MainTodoService {
 
-  private apiUrl = 'http://localhost:8080/api/todos';
+  private apiUrl = 'http://localhost:8080/api/main-todos';
 
   constructor(private http: HttpClient) {}
 

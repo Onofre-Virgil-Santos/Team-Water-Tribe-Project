@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { MainTodoService } from '../../services/maintodo.service';
+import { MainTodo } from '../../models/maintodo.model';
 
 @Component({
   selector: 'app-todo',
@@ -9,14 +11,30 @@ import { CommonModule } from '@angular/common';
   templateUrl: './todo.html',
   styleUrl: './todo.css',
 })
-export class Todo {
+export class Todo implements OnInit {
   newTodoTitle = '';
-  todos: string[] = [];
+  todos: MainTodo[] = [];
+
+  constructor(private mainTodoService: MainTodoService) {}
+
+  ngOnInit() {
+    this.loadTodos();
+  }
+
+  loadTodos() {
+    this.mainTodoService.getAllTodos().subscribe(data => {
+      this.todos = data;
+    });
+  }
 
   addTodo() {
-    if (this.newTodoTitle.trim() === '') return;
+    if (!this.newTodoTitle.trim()) {
+      return;
+    }
 
-    this.todos.push(this.newTodoTitle);
-    this.newTodoTitle = '';
+    this.mainTodoService.createTodo(this.newTodoTitle).subscribe(() => {
+      this.newTodoTitle = '';
+      this.loadTodos();
+    });
   }
 }
