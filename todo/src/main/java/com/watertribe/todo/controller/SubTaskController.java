@@ -3,8 +3,8 @@ package com.watertribe.todo.controller;
 import com.watertribe.todo.dto.SubTaskRequest;
 import com.watertribe.todo.dto.SubTaskResponse;
 import com.watertribe.todo.service.SubTaskService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,26 +20,29 @@ public class SubTaskController {
     public SubTaskResponse createSubTask(
             @PathVariable Long mainTodoId,
             @RequestBody SubTaskRequest request,
-            Authentication authentication
+            HttpServletRequest httpRequest
     ) {
-        return subTaskService.createSubTask(mainTodoId, request, authentication);
+        Long userId = Long.valueOf((String) httpRequest.getAttribute("userId"));
+        return subTaskService.createSubTask(mainTodoId, request, userId);
     }
 
     @GetMapping
     public List<SubTaskResponse> getAllSubTasks(
             @PathVariable Long mainTodoId,
-            Authentication authentication
+            HttpServletRequest httpRequest
     ) {
-        return subTaskService.getAllSubTasks(mainTodoId, authentication);
+        Long userId = Long.valueOf((String) httpRequest.getAttribute("userId"));
+        return subTaskService.getAllSubTasks(mainTodoId, userId);
     }
 
     @GetMapping("/{id}")
     public SubTaskResponse getSubTaskById(
             @PathVariable Long mainTodoId,
             @PathVariable Long id,
-            Authentication authentication
+            HttpServletRequest httpRequest
     ) {
-        return subTaskService.getSubTaskById(mainTodoId, id, authentication);
+        Long userId = Long.valueOf((String) httpRequest.getAttribute("userId"));
+        return subTaskService.getSubTaskById(mainTodoId, id, userId);
     }
 
     @PutMapping("/{id}")
@@ -47,18 +50,20 @@ public class SubTaskController {
             @PathVariable Long mainTodoId,
             @PathVariable Long id,
             @RequestBody SubTaskRequest request,
-            Authentication authentication
+            HttpServletRequest httpRequest
     ) {
-        return subTaskService.updateSubTask(mainTodoId, id, request, authentication);
+        Long userId = Long.valueOf((String) httpRequest.getAttribute("userId"));
+        return subTaskService.updateSubTask(mainTodoId, id, request, userId);
     }
 
     @DeleteMapping("/{id}")
     public String deleteSubTask(
             @PathVariable Long mainTodoId,
             @PathVariable Long id,
-            Authentication authentication
+            HttpServletRequest httpRequest
     ) {
-        subTaskService.deleteSubTask(mainTodoId, id, authentication);
+        Long userId = Long.valueOf((String) httpRequest.getAttribute("userId"));
+        subTaskService.deleteSubTask(mainTodoId, id, userId);
         return "Sub task deleted successfully";
     }
 }

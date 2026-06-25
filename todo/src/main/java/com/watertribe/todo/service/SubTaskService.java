@@ -9,7 +9,6 @@ import com.watertribe.todo.repository.MainTodoRepository;
 import com.watertribe.todo.repository.SubTaskRepository;
 import com.watertribe.todo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,9 +24,9 @@ public class SubTaskService {
     public SubTaskResponse createSubTask(
             Long mainTodoId,
             SubTaskRequest request,
-            Authentication authentication
+            Long userId
     ) {
-        MainTodo mainTodo = getMainTodoForUser(mainTodoId, authentication);
+        MainTodo mainTodo = getMainTodoForUser(mainTodoId, userId);
 
         SubTask subTask = SubTask.builder()
                 .task(request.getTask())
@@ -41,9 +40,9 @@ public class SubTaskService {
 
     public List<SubTaskResponse> getAllSubTasks(
             Long mainTodoId,
-            Authentication authentication
+            Long userId
     ) {
-        MainTodo mainTodo = getMainTodoForUser(mainTodoId, authentication);
+        MainTodo mainTodo = getMainTodoForUser(mainTodoId, userId);
 
         return subTaskRepository.findByMainTodo(mainTodo)
                 .stream()
@@ -54,9 +53,9 @@ public class SubTaskService {
     public SubTaskResponse getSubTaskById(
             Long mainTodoId,
             Long id,
-            Authentication authentication
+            Long userId
     ) {
-        MainTodo mainTodo = getMainTodoForUser(mainTodoId, authentication);
+        MainTodo mainTodo = getMainTodoForUser(mainTodoId, userId);
 
         SubTask subTask = subTaskRepository.findByIdAndMainTodo(id, mainTodo)
                 .orElseThrow(() -> new RuntimeException("Sub task not found"));
@@ -68,9 +67,9 @@ public class SubTaskService {
             Long mainTodoId,
             Long id,
             SubTaskRequest request,
-            Authentication authentication
+            Long userId
     ) {
-        MainTodo mainTodo = getMainTodoForUser(mainTodoId, authentication);
+        MainTodo mainTodo = getMainTodoForUser(mainTodoId, userId);
 
         SubTask subTask = subTaskRepository.findByIdAndMainTodo(id, mainTodo)
                 .orElseThrow(() -> new RuntimeException("Sub task not found"));
@@ -85,9 +84,9 @@ public class SubTaskService {
     public void deleteSubTask(
             Long mainTodoId,
             Long id,
-            Authentication authentication
+            Long userId
     ) {
-        MainTodo mainTodo = getMainTodoForUser(mainTodoId, authentication);
+        MainTodo mainTodo = getMainTodoForUser(mainTodoId, userId);
 
         SubTask subTask = subTaskRepository.findByIdAndMainTodo(id, mainTodo)
                 .orElseThrow(() -> new RuntimeException("Sub task not found"));
@@ -95,10 +94,8 @@ public class SubTaskService {
         subTaskRepository.delete(subTask);
     }
 
-    private MainTodo getMainTodoForUser(Long mainTodoId, Authentication authentication) {
-        String email = authentication.getName();
-
-        User user = userRepository.findByEmail(email)
+    private MainTodo getMainTodoForUser(Long mainTodoId, Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return mainTodoRepository.findByIdAndUser(mainTodoId, user)
