@@ -12,28 +12,19 @@ export class MainTodoService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(){
-    const token = localStorage.getItem('auth_token');
-    return {
-      headers: new HttpHeaders({
-        Authorization: `Bearer ${token}`
-      })
-    };
-  }
-
   getAllTodos(): Observable<MainTodo[]> {
-    return this.http.get<MainTodo[]>(this.apiUrl, this.getHeaders());
+    return this.http.get<MainTodo[]>(this.apiUrl);
   }
 
   createTodo(todoData: Partial<MainTodo>): Observable<MainTodo> {
-    return this.http.post<MainTodo>(this.apiUrl, todoData, this.getHeaders());
+    return this.http.post<MainTodo>(this.apiUrl, todoData);
   }
 
   updateTodo(todoId: number, todoData: Partial<MainTodo>): Observable<MainTodo> {
-    return this.http.put<MainTodo>(`${this.apiUrl}/${todoId}`, todoData, this.getHeaders());
+    return this.http.put<MainTodo>(`${this.apiUrl}/${todoId}`, todoData);
   }
 
-  deleteTodo(todoId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${todoId}`, this.getHeaders());
+  deleteTodo(todoId: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${todoId}`, { responseType: 'text' });
   }
 }
