@@ -16,8 +16,8 @@ export class MainTodoService {
     return this.http.get<MainTodo[]>(this.apiUrl);
   }
 
-  createTodo(title: string): Observable<MainTodo> {
-    return this.http.post<MainTodo>(this.apiUrl, { title });
+  createTodo(task: string): Observable<MainTodo> {
+    return this.http.post<MainTodo>(this.apiUrl, { task });
   }
 
   deleteTodo(id: number): Observable<void> {
