@@ -3,6 +3,8 @@ package com.watertribe.todo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "main_todos")
@@ -31,6 +33,9 @@ public class MainTodo {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "mainTodo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubTask> subTasks = new ArrayList<>();
 
     @PrePersist
     public void beforeCreate() {

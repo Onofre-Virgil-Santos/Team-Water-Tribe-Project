@@ -8,8 +8,9 @@ import { MainTodo } from '../models/maintodo.model';
 })
 export class MainTodoService {
 
-  private readonly apiUrl = 'http://localhost:8080/api/main-todos';
-  private http = inject(HttpClient);
+  private apiUrl = 'http://localhost:8080/api/main-todos';
+
+  constructor(private http: HttpClient) {}
 
   getAllTodos(): Observable<MainTodo[]> {
     return this.http.get<MainTodo[]>(this.apiUrl);
