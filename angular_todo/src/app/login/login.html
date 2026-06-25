@@ -1,4 +1,7 @@
-<section aria-labelledby="login-heading">
+<div class="auth-page" aria-labelledby="login-heading">
+  <div class="left-panel"></div>
+
+  <div class="form-panel">
   <h1 id="login-heading">Welcome! Please Login.</h1>
 
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
@@ -19,5 +22,6 @@
     <p role="alert" class="error-message">{{ errorMessage() }}</p>
   }
 
-  <p>Don't have an account? <a routerLink="/register">Register here</a></p>
-</section>
+  <p class="auth-link">Don't have an account? <a routerLink="/register">Register here</a></p>
+  </div>
+</div>
