@@ -5,6 +5,7 @@ import com.watertribe.todo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.watertribe.todo.utility.JwtUtility;
 
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtility jwtUtility;
 
     /**
      * POST /api/users/register
@@ -47,7 +49,7 @@ public class UserController {
      * Body: { "username": "alice", "password": "secret123" }
      */
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody Map<String, String> body) {
+    public ResponseEntity<String> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
 
@@ -62,6 +64,7 @@ public class UserController {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-        return ResponseEntity.ok(user);
+        String token = jwtUtility.generateToken(user);
+        return ResponseEntity.ok(token);
     }
 }

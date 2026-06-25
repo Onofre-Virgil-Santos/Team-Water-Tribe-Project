@@ -21,9 +21,9 @@ public class MainTodoService {
 
     public MainTodoResponse createMainTodo(
             MainTodoRequest request,
-            Authentication authentication
+            Long userId
     ) {
-        User user = getLoggedInUser(authentication);
+        User user = getLoggedInUser(userId);
 
         MainTodo mainTodo = MainTodo.builder()
                 .task(request.getTask())
@@ -37,8 +37,8 @@ public class MainTodoService {
         return mapToResponse(savedTodo);
     }
 
-    public List<MainTodoResponse> getAllMainTodos(Authentication authentication) {
-        User user = getLoggedInUser(authentication);
+    public List<MainTodoResponse> getAllMainTodos(Long userId) {
+        User user = getLoggedInUser(userId);
 
         return mainTodoRepository.findByUser(user)
                 .stream()
@@ -48,9 +48,9 @@ public class MainTodoService {
 
     public MainTodoResponse getMainTodoById(
             Long id,
-            Authentication authentication
+            Long userId
     ) {
-        User user = getLoggedInUser(authentication);
+        User user = getLoggedInUser(userId);
 
         MainTodo mainTodo = mainTodoRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Main todo not found"));
@@ -60,10 +60,10 @@ public class MainTodoService {
 
     public MainTodoResponse updateMainTodo(
             Long id,
-            MainTodoRequest request,
-            Authentication authentication
+            Long userId,
+            MainTodoRequest request
     ) {
-        User user = getLoggedInUser(authentication);
+        User user = getLoggedInUser(userId);
 
         MainTodo mainTodo = mainTodoRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Main todo not found"));
@@ -79,9 +79,9 @@ public class MainTodoService {
 
     public void deleteMainTodo(
             Long id,
-            Authentication authentication
+            Long userId
     ) {
-        User user = getLoggedInUser(authentication);
+        User user = getLoggedInUser(userId);
 
         MainTodo mainTodo = mainTodoRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new RuntimeException("Main todo not found"));
@@ -89,10 +89,8 @@ public class MainTodoService {
         mainTodoRepository.delete(mainTodo);
     }
 
-    private User getLoggedInUser(Authentication authentication) {
-        String email = authentication.getName();
-
-        return userRepository.findByEmail(email)
+    private User getLoggedInUser(Long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
