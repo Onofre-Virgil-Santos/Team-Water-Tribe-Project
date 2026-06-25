@@ -9,7 +9,6 @@ import com.watertribe.todo.utility.JwtUtility;
 
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("")
 @RequiredArgsConstructor
