@@ -1,16 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../auth/auth.service';
-
-interface MainTodo {
-  id: number;
-  task: string;
-  description: string;
-  completed: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { MainTodoService } from '../../services/maintodo.service';
+import { MainTodo } from '../../models/maintodo.model';
 
 @Component({
   selector: 'app-todo',
@@ -21,9 +12,8 @@ interface MainTodo {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Todo implements OnInit {
-  private http = inject(HttpClient);
 
-  private readonly apiUrl = 'http://localhost:8080/api/main-todos';
+  private mainTodoService = inject(MainTodoService);
 
   todos = signal<MainTodo[]>([]);
   errorMessage = signal('');
@@ -40,7 +30,7 @@ export class Todo implements OnInit {
   }
 
   loadTodos(): void {
-    this.http.get<MainTodo[]>(this.apiUrl).subscribe({
+    this.mainTodoService.getAllTodos().subscribe({
       next: (todos) => this.todos.set(todos),
       error: () => this.errorMessage.set('Failed to load todos.'),
     });
@@ -59,12 +49,12 @@ export class Todo implements OnInit {
     const editId = this.editingTodoId();
 
     if (editId !== null) {
-      this.http.put<MainTodo>(`${this.apiUrl}/${editId}`, todoData).subscribe({
+      this.mainTodoService.updateTodo(editId, todoData).subscribe({
         next: () => { this.resetForm(); this.loadTodos(); },
         error: (err) => this.errorMessage.set(typeof err.error === 'string' ? err.error : 'Failed to update todo.'),
       });
     } else {
-      this.http.post<MainTodo>(this.apiUrl, todoData).subscribe({
+      this.mainTodoService.createTodo(todoData).subscribe({
         next: () => { this.resetForm(); this.loadTodos(); },
         error: (err) => this.errorMessage.set(typeof err.error === 'string' ? err.error : 'Failed to create todo.'),
       });
@@ -72,7 +62,7 @@ export class Todo implements OnInit {
   }
 
   toggleComplete(todo: MainTodo): void {
-    this.http.put<MainTodo>(`${this.apiUrl}/${todo.id}`, {
+    this.mainTodoService.updateTodo(todo.id, {
       task: todo.task,
       description: todo.description,
       completed: !todo.completed,
@@ -92,7 +82,7 @@ export class Todo implements OnInit {
   }
 
   deleteTodo(id: number): void {
-    this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+    this.mainTodoService.deleteTodo(id).subscribe({
       next: () => this.loadTodos(),
       error: () => this.errorMessage.set('Failed to delete todo.'),
     });
