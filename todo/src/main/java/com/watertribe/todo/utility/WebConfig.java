@@ -37,13 +37,13 @@ public class WebConfig implements WebMvcConfigurer {
      * Any request that doesn't match an excluded path must include a valid JWT
      * in the Authorization header.
      */
-    // @Override
-    // public void addInterceptors(InterceptorRegistry registry) {
-    //     registry.addInterceptor(authInterceptor)
-    //             .addPathPatterns("/**")          // protect everything by default
-    //             .excludePathPatterns(            // public routes that don't need a token
-    //                     "/register",
-    //                     "/login"
-    //             );
-    // }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authInterceptor)
+                .addPathPatterns("/**")          // protect everything by default
+                .excludePathPatterns(            // public routes that don't need a token
+                        "/register",
+                        "/login"
+                );
+    }
 }
