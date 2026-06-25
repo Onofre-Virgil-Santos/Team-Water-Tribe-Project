@@ -4,7 +4,6 @@ import com.watertribe.todo.dto.MainTodoRequest;
 import com.watertribe.todo.dto.MainTodoResponse;
 import com.watertribe.todo.service.MainTodoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;

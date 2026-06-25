@@ -25,11 +25,15 @@ export class MainTodoService {
     return this.http.get<MainTodo[]>(this.apiUrl, this.getHeaders());
   }
 
-  createTodo(task: string): Observable<MainTodo> {
-    return this.http.post<MainTodo>(this.apiUrl, { task }, this.getHeaders());
+  createTodo(todoData: Partial<MainTodo>): Observable<MainTodo> {
+    return this.http.post<MainTodo>(this.apiUrl, todoData, this.getHeaders());
   }
 
-  deleteTodo(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, this.getHeaders());
+  updateTodo(todoId: number, todoData: Partial<MainTodo>): Observable<MainTodo> {
+    return this.http.put<MainTodo>(`${this.apiUrl}/${todoId}`, todoData, this.getHeaders());
+  }
+
+  deleteTodo(todoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${todoId}`, this.getHeaders());
   }
 }
