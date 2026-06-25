@@ -6,7 +6,7 @@ import com.watertribe.todo.service.MainTodoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -18,40 +18,45 @@ public class MainTodoController {
 
     @PostMapping
     public MainTodoResponse createMainTodo(
-            @RequestBody MainTodoRequest request,
-            Authentication authentication
+            @RequestBody MainTodoRequest todorequest,
+            HttpServletRequest request
     ) {
-        return mainTodoService.createMainTodo(request, authentication);
+        Long UserId = Long.valueOf((String) request.getAttribute("userId"));
+        return mainTodoService.createMainTodo(todorequest, UserId);
     }
 
     @GetMapping
-    public List<MainTodoResponse> getAllMainTodos(Authentication authentication) {
-        return mainTodoService.getAllMainTodos(authentication);
+    public List<MainTodoResponse> getAllMainTodos(HttpServletRequest request) {
+        Long UserId = Long.valueOf((String) request.getAttribute("userId"));
+        return mainTodoService.getAllMainTodos(UserId);
     }
 
     @GetMapping("/{id}")
     public MainTodoResponse getMainTodoById(
             @PathVariable Long id,
-            Authentication authentication
+            HttpServletRequest request
     ) {
-        return mainTodoService.getMainTodoById(id, authentication);
+        Long UserId = Long.valueOf((String) request.getAttribute("userId"));
+        return mainTodoService.getMainTodoById(id, UserId);
     }
 
     @PutMapping("/{id}")
     public MainTodoResponse updateMainTodo(
             @PathVariable Long id,
-            @RequestBody MainTodoRequest request,
-            Authentication authentication
+            @RequestBody MainTodoRequest todorequest,
+            HttpServletRequest request
     ) {
-        return mainTodoService.updateMainTodo(id, request, authentication);
+        Long UserId = Long.valueOf((String) request.getAttribute("userId"));
+        return mainTodoService.updateMainTodo(id, UserId, todorequest);
     }
 
     @DeleteMapping("/{id}")
     public String deleteMainTodo(
             @PathVariable Long id,
-            Authentication authentication
+            HttpServletRequest request
     ) {
-        mainTodoService.deleteMainTodo(id, authentication);
+        Long UserId = Long.valueOf((String) request.getAttribute("userId"));
+        mainTodoService.deleteMainTodo(id, UserId);
         return "Main todo deleted successfully";
     }
 }

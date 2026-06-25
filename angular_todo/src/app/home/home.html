@@ -1,83 +1,10 @@
-<section aria-labelledby="home-heading">
-  <header>
-    <h1 id="home-heading">My Todos</h1>
-    <button type="button" (click)="logout()">Logout</button>
+<div class="layout">
+  <header class="navbar">
+    <span class="navbar-title">TODO APP</span>
+    <button class="btn-logout" type="button" (click)="logout()">Logout</button>
   </header>
 
-  <!-- Create / Edit form -->
-  <section aria-labelledby="form-heading">
-    <h2 id="form-heading">
-      @if (editingTodoId() !== null) {
-        Edit Todo
-      } @else {
-        New Todo
-      }
-    </h2>
-
-    <form [formGroup]="todoForm" (ngSubmit)="onSubmit()">
-      <div>
-        <label for="task">Task</label>
-        <input id="task" type="text" formControlName="task" autocomplete="off" />
-        @if (todoForm.controls.task.invalid && todoForm.controls.task.touched) {
-          <p role="alert" class="error-message">Task is required.</p>
-        }
-      </div>
-
-      <div>
-        <label for="description">Description</label>
-        <input id="description" type="text" formControlName="description" autocomplete="off" />
-      </div>
-
-      @if (editingTodoId() !== null) {
-        <div>
-          <label>
-            <input type="checkbox" formControlName="completed" />
-            Completed
-          </label>
-        </div>
-      }
-
-      <div>
-        <button type="submit" [disabled]="todoForm.invalid">
-          @if (editingTodoId() !== null) {
-            Save Changes
-          } @else {
-            Add Todo
-          }
-        </button>
-
-        @if (editingTodoId() !== null) {
-          <button type="button" (click)="cancelEdit()">Cancel</button>
-        }
-      </div>
-    </form>
-  </section>
-
-  @if (errorMessage()) {
-    <p role="alert" class="error-message">{{ errorMessage() }}</p>
-  }
-
-  <!-- Todo list -->
-  <section aria-label="Todo list">
-    @if (todos().length === 0) {
-      <p>No todos yet. Add one above.</p>
-    } @else {
-      <ul>
-        @for (todo of todos(); track todo.id) {
-          <li>
-            <div>
-              <span [class.completed]="todo.completed">{{ todo.task }}</span>
-              @if (todo.description) {
-                <p>{{ todo.description }}</p>
-              }
-            </div>
-            <div>
-              <button type="button" (click)="editTodo(todo)">Edit</button>
-              <button type="button" (click)="deleteTodo(todo.id)">Delete</button>
-            </div>
-          </li>
-        }
-      </ul>
-    }
-  </section>
-</section>
+  <main class="layout-content">
+    <router-outlet />
+  </main>
+</div>
