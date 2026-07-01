@@ -18,6 +18,7 @@ repositories {
 }
 
 dependencies {
+	testImplementation ("io.rest-assured:rest-assured:6.0.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.hibernate.orm:hibernate-community-dialects")
 	implementation("org.xerial:sqlite-jdbc")
@@ -40,7 +41,6 @@ dependencies {
 	testCompileOnly("org.projectlombok:lombok")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testAnnotationProcessor("org.projectlombok:lombok")
-	testImplementation ("io.rest-assured:rest-assured:6.0.0")
 	testImplementation("com.h2database:h2:2.4.240")
 	// the core cucumber code
     testImplementation("io.cucumber:cucumber-java:7.33.0")
