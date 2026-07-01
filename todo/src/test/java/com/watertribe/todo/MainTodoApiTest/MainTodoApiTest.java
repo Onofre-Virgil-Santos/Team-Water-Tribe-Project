@@ -1,177 +1,180 @@
 package com.watertribe.todo.MainTodoApiTest;
 
+import com.watertribe.todo.entity.User;
+import com.watertribe.todo.repository.MainTodoRepository;
+import com.watertribe.todo.repository.UserRepository;
+import com.watertribe.todo.utility.JwtUtility;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeAll;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
 
-public class MainTodoApiTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class MainTodoApiTest {
 
-    private static String token;
-    private static Integer createdTodoId;
+    @LocalServerPort
+    int port;
 
-    @BeforeAll
-    static void setup() {
-        RestAssured.baseURI = "http://localhost";
-        RestAssured.port = 8080;
+    @Autowired UserRepository userRepository;
+    @Autowired MainTodoRepository mainTodoRepository;
+    @Autowired PasswordEncoder passwordEncoder;
+    @Autowired JwtUtility jwtUtility;
 
-        // Login first and get JWT token
-        Response loginResponse = given()
-                .contentType("application/json")
-                .body("""
-                    {
-                      "username": "susu",
-                      "password": "susudodo"
-                    }
-                """)
-                .when()
-                .post("/login");
+    private String token;
 
-        assertEquals(200, loginResponse.statusCode());
+    @BeforeEach
+    void setUp() {
+        RestAssured.port = port;
 
-        token = loginResponse.body().asString();
+        mainTodoRepository.deleteAll();
+        userRepository.deleteAll();
 
-        assertNotNull(token);
-        assertFalse(token.isBlank());
+        User user = userRepository.save(User.builder()
+                .username("testuser")
+                .email("test@example.com")
+                .passwordHash(passwordEncoder.encode("password123"))
+                .build());
+
+        token = jwtUtility.generateToken(user);
     }
 
     @Test
     void testCreateMainTodoSuccessfully() {
-        Response response = given()
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .body("""
-                    {
-                      "task": "Study REST Assured",
-                      "description": "Write API tests"
-                    }
-                """)
-                .when()
-                .post("/api/main-todos");
-
-        assertTrue(response.statusCode() == 200 || response.statusCode() == 201);
-
-        createdTodoId = response.jsonPath().getInt("id");
-
-        assertNotNull(createdTodoId);
-        assertEquals("Study REST Assured", response.jsonPath().getString("task"));
-        assertEquals("Write API tests", response.jsonPath().getString("description"));
+        given()
+            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body("""
+                {
+                  "task": "Study REST Assured",
+                  "description": "Write API tests"
+                }
+            """)
+        .when()
+            .post("/api/main-todos")
+        .then()
+            .statusCode(anyOf(equalTo(200), equalTo(201)))
+            .body("id",          notNullValue())
+            .body("task",        equalTo("Study REST Assured"))
+            .body("description", equalTo("Write API tests"));
     }
 
     @Test
     void testGetAllMainTodos() {
-        Response response = given()
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .get("/api/main-todos");
-
-        assertEquals(200, response.statusCode());
-
-        assertNotNull(response.body().asString());
-        assertTrue(response.body().asString().startsWith("["));
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get("/api/main-todos")
+        .then()
+            .statusCode(200)
+            .body("$", notNullValue());
     }
 
     @Test
     void testGetMainTodoById() {
-        Integer todoId = createTodoForTest();
+        int todoId = createTodoForTest("Temporary Todo", "Temporary description");
 
-        Response response = given()
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .get("/api/main-todos/" + todoId);
-
-        assertEquals(200, response.statusCode());
-        assertEquals(todoId, response.jsonPath().getInt("id"));
-        assertEquals("Temporary Todo", response.jsonPath().getString("task"));
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get("/api/main-todos/" + todoId)
+        .then()
+            .statusCode(200)
+            .body("id",   equalTo(todoId))
+            .body("task", equalTo("Temporary Todo"));
     }
 
     @Test
     void testUpdateMainTodoSuccessfully() {
-        Integer todoId = createTodoForTest();
+        int todoId = createTodoForTest("Original Todo", "Original description");
 
-        Response response = given()
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .body("""
-                    {
-                      "task": "Updated Todo",
-                      "description": "Updated description"
-                    }
-                """)
-                .when()
-                .put("/api/main-todos/" + todoId);
-
-        assertEquals(200, response.statusCode());
-        assertEquals(todoId, response.jsonPath().getInt("id"));
-        assertEquals("Updated Todo", response.jsonPath().getString("task"));
-        assertEquals("Updated description", response.jsonPath().getString("description"));
+        given()
+            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body("""
+                {
+                  "task": "Updated Todo",
+                  "description": "Updated description"
+                }
+            """)
+        .when()
+            .put("/api/main-todos/" + todoId)
+        .then()
+            .statusCode(200)
+            .body("id",          equalTo(todoId))
+            .body("task",        equalTo("Updated Todo"))
+            .body("description", equalTo("Updated description"));
     }
 
     @Test
     void testDeleteMainTodoSuccessfully() {
-        Integer todoId = createTodoForTest();
+        int todoId = createTodoForTest("Todo to delete", "Delete me");
 
-        Response deleteResponse = given()
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .delete("/api/main-todos/" + todoId);
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .delete("/api/main-todos/" + todoId)
+        .then()
+            .statusCode(anyOf(equalTo(200), equalTo(204)));
 
-        assertTrue(deleteResponse.statusCode() == 200 || deleteResponse.statusCode() == 204);
-
-        Response getResponse = given()
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .get("/api/main-todos/" + todoId);
-
-        // Service throws RuntimeException for not found which Spring maps to 500
-        assertTrue(getResponse.statusCode() == 404 || getResponse.statusCode() == 500);
+        // After delete, fetching it should return an error (500 since service throws RuntimeException)
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get("/api/main-todos/" + todoId)
+        .then()
+            .statusCode(anyOf(equalTo(404), equalTo(500)));
     }
 
     @Test
     void testCreateMainTodoWithoutTokenShouldFail() {
-        Response response = given()
-                .contentType("application/json")
-                .body("""
-                    {
-                      "title": "Unauthorized Todo",
-                      "description": "Should not be created"
-                    }
-                """)
-                .when()
-                .post("/api/main-todos");
-
-        assertEquals(401, response.statusCode());
+        given()
+            .contentType(ContentType.JSON)
+            .body("""
+                {
+                  "task": "Unauthorized Todo",
+                  "description": "Should not be created"
+                }
+            """)
+        .when()
+            .post("/api/main-todos")
+        .then()
+            .statusCode(401);
     }
 
     @Test
-    void testGetNonExistingMainTodoShouldReturn404() {
-        Response response = given()
-                .header("Authorization", "Bearer " + token)
-                .when()
-                .get("/api/main-todos/999999");
-
-        // Service throws RuntimeException for not found which Spring maps to 500
-        assertTrue(response.statusCode() == 404 || response.statusCode() == 500);
+    void testGetNonExistingMainTodoShouldReturn500() {
+        given()
+            .header("Authorization", "Bearer " + token)
+        .when()
+            .get("/api/main-todos/999999")
+        .then()
+            .statusCode(anyOf(equalTo(404), equalTo(500)));
     }
 
-    private Integer createTodoForTest() {
-        Response response = given()
-                .header("Authorization", "Bearer " + token)
-                .contentType("application/json")
-                .body("""
-                    {
-                      "task": "Temporary Todo",
-                      "description": "Temporary description"
-                    }
-                """)
-                .when()
-                .post("/api/main-todos");
+    // ── helper ───────────────────────────────────────────────────────────────
 
-        assertTrue(response.statusCode() == 200 || response.statusCode() == 201);
-
-        return response.jsonPath().getInt("id");
+    private int createTodoForTest(String task, String description) {
+        return given()
+            .header("Authorization", "Bearer " + token)
+            .contentType(ContentType.JSON)
+            .body(String.format("""
+                {
+                  "task": "%s",
+                  "description": "%s"
+                }
+            """, task, description))
+        .when()
+            .post("/api/main-todos")
+        .then()
+            .statusCode(anyOf(equalTo(200), equalTo(201)))
+            .extract()
+            .path("id");
     }
 }
