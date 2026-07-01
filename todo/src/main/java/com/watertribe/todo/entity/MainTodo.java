@@ -3,6 +3,8 @@ package com.watertribe.todo.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "main_todos")
@@ -31,6 +33,10 @@ public class MainTodo {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    
+    @Builder.Default
+    @OneToMany(mappedBy = "mainTodo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubTask> subTasks = new ArrayList<>();
 
     @PrePersist
     public void beforeCreate() {
@@ -42,5 +48,20 @@ public class MainTodo {
     @PreUpdate
     public void beforeUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void addSubTask(SubTask subTask) {
+        subTasks.add(subTask);
+        subTask.setMainTodo(this);
+    }
+
+    public void removeSubTask(Long subTaskId) {
+        subTasks.stream()
+                .filter(task -> task.getId().equals(subTaskId))
+                .findFirst()
+                .ifPresent(task -> {
+                    task.setMainTodo(null); 
+                    subTasks.remove(task);
+                });
     }
 }

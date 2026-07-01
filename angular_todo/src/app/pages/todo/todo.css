@@ -252,6 +252,14 @@ h1 {
   flex-shrink: 0;
 }
 
+.subtodo-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: #7b22ff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .subtodo-edit-input {
   flex: 1;
   border: 1px solid #7b22ff;

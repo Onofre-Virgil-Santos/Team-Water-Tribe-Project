@@ -19,11 +19,11 @@ export class SubTodoService {
     return this.http.post<SubTodo>(`${this.apiUrl}/${parent_id}/subtasks`, { task });
   }
 
-  updateSubTodo(task: string, parent_id: number, id: number): Observable<SubTodo> {
-    return this.http.put<SubTodo>(`${this.apiUrl}/${parent_id}/subtasks/${id}`, { task });
+  updateSubTodo(task: string, completed: boolean, parent_id: number, id: number): Observable<SubTodo> {
+    return this.http.put<SubTodo>(`${this.apiUrl}/${parent_id}/subtasks/${id}`, { task, completed });
   }
 
-  deleteSubTodo(parent_id: number, id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${parent_id}/subtasks/${id}`);
+  deleteSubTodo(parent_id: number, id: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${parent_id}/subtasks/${id}`, { responseType: 'text' });
   }
 }

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -13,6 +13,7 @@ import { RouterLink } from '@angular/router';
 export class Register {
   // Inject HttpClient to make HTTP requests to the backend
   private http = inject(HttpClient);
+  private router = inject(Router);
 
   // A FormGroup is a collection of FormControls that represents the entire form.
   // It tracks the value and validation state of each child control as a single unit.
@@ -51,23 +52,17 @@ export class Register {
     //              rather than just the parsed body
     //     responseType: 'text' tells Angular to treat the response body as plain text
     //                   instead of attempting to parse it as JSON
-    this.http.post<any>('http://localhost:8080/register', body).subscribe({
-      // .subscribe() triggers the HTTP request and lets us handle the result.
-      // http.post() returns an Observable — it won't execute until subscribed to.
-      // The object passed to subscribe() is an Observer with callback functions:
-      //   next: called when the request completes successfully (2xx status)
-      //   error: called when the request fails (network error or non-2xx status)
-      // Angular's HttpClient automatically routes non-2xx responses to the error callback.
-
-      next: (response) => {
-        // A 201 status indicates the account was created successfully
-        if (response.status === 201) {
-          this.successMessage.set('Registration successful!');
-        }
+    this.http.post('http://localhost:8080/register', body, { responseType: 'text' }).subscribe({
+      next: () => {
+        this.successMessage.set('Registration successful!');
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 1500);
       },
       error: (err) => {
-        // Display the error message returned by the backend, or a generic fallback
-        const message = typeof err.error === 'string' ? err.error : (err.error?.message ?? 'An unexpected error occurred');
+        const message = typeof err.error === 'string' && err.error
+          ? err.error
+          : 'An unexpected error occurred. Please try again.';
         this.errorMessage.set(message);
       },
     });

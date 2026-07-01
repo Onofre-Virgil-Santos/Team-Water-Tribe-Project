@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { delay, switchMap } from 'rxjs/operators';
 import { MainTodoService } from '../../services/maintodo.service';
 import { MainTodo } from '../../models/maintodo.model';
-import { SubTodo} from '../../models/subtodo.model';
+import { SubTodo } from '../../models/subtodo.model';
 import { SubTodoService } from '../../services/subtodo.service';
 @Component({
   selector: 'app-todo',
@@ -72,12 +74,39 @@ export class Todo implements OnInit {
   }
 
   toggleComplete(todo: MainTodo): void {
+    const newCompleted = !todo.completed;
+
     this.mainTodoService.updateTodo(todo.id, {
       task: todo.task,
       description: todo.description,
-      completed: !todo.completed,
-    }).subscribe({
-      next: () => this.loadTodos(),
+      completed: newCompleted,
+    }).pipe(
+      switchMap(() => {
+        // Only cascade to subtodos when marking the main todo complete
+        if (!newCompleted) {
+          return of(null);
+        }
+        return this.subTodoService.getAllSubTodos(todo.id).pipe(
+          switchMap((subs: SubTodo[]) => {
+            const incomplete = subs.filter(s => !s.completed);
+            if (incomplete.length === 0) {
+              return of(null);
+            }
+            return forkJoin(
+              incomplete.map(s =>
+                this.subTodoService.updateSubTodo(s.task, true, todo.id, s.id)
+              )
+            );
+          })
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.loadTodos();
+        if (this.expandedTodoId() === todo.id) {
+          this.loadSubTodos(todo.id);
+        }
+      },
       error: () => this.errorMessage.set('Failed to update todo.'),
     });
   }
@@ -92,9 +121,19 @@ export class Todo implements OnInit {
   }
 
   deleteTodo(id: number): void {
+    const previousTodos = this.todos();
+    this.todos.set(previousTodos.filter(t => t.id !== id));
+
     this.mainTodoService.deleteTodo(id).subscribe({
-      next: () => this.loadTodos(),
-      error: () => this.errorMessage.set('Failed to delete todo.'),
+      next: () => {
+        this.loadTodos();
+        this.subtodos.set([]);
+        this.expandedTodoId.set(null);
+      },
+      error: (err) => {
+        this.todos.set(previousTodos);
+        this.errorMessage.set(`Failed to delete todo. Please try again. ${err}`);
+      },
     });
   }
 
@@ -141,7 +180,8 @@ export class Todo implements OnInit {
   saveSubTodoEdit(parentId: number, subId: number): void {
     const task = this.editingSubTodoTask().trim();
     if (!task) return;
-    this.subTodoService.updateSubTodo(task, parentId, subId).subscribe({
+    const current = this.subtodos().find(s => s.id === subId);
+    this.subTodoService.updateSubTodo(task, current?.completed ?? false, parentId, subId).subscribe({
       next: () => { this.cancelSubTodoEdit(); this.loadSubTodos(parentId); },
       error: () => this.subtodoError.set('Failed to update subtask.'),
     });
@@ -153,16 +193,20 @@ export class Todo implements OnInit {
   }
 
   toggleSubTodoComplete(parentId: number, sub: SubTodo): void {
-    this.subTodoService.updateSubTodo(sub.task, parentId, sub.id).subscribe({
+    this.subTodoService.updateSubTodo(sub.task, !sub.completed, parentId, sub.id).subscribe({
       next: () => this.loadSubTodos(parentId),
       error: () => this.subtodoError.set('Failed to update subtask.'),
     });
   }
 
   deleteSubTodo(parentId: number, subId: number): void {
+    const currentSubtodos = this.subtodos();
+    this.subtodos.set(currentSubtodos.filter(s => s.id !== subId));
     this.subTodoService.deleteSubTodo(parentId, subId).subscribe({
-      next: () => this.loadSubTodos(parentId),
-      error: () => this.subtodoError.set('Failed to delete subtask.'),
+      error: (err) => {
+        this.subtodos.set(currentSubtodos);
+        this.subtodoError.set(`Failed to delete subtask. Please try again. ${err}`);
+      },
     });
   }
 
