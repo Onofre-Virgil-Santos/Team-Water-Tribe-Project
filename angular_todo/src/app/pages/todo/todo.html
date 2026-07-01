@@ -97,6 +97,13 @@
                       <button type="button" class="btn-subtodo-save"   (click)="saveSubTodoEdit(todo.id, sub.id)" title="Save">✓</button>
                       <button type="button" class="btn-subtodo-cancel" (click)="cancelSubTodoEdit()"              title="Cancel">✕</button>
                     } @else {
+                      <input
+                        type="checkbox"
+                        class="subtodo-checkbox"
+                        [checked]="sub.completed"
+                        (change)="toggleSubTodoComplete(todo.id, sub)"
+                        [attr.aria-label]="'Mark ' + sub.task + ' complete'"
+                      />
                       <span class="subtodo-task" [class.strikethrough]="sub.completed">{{ sub.task }}</span>
                       <div class="subtodo-actions">
                         <button type="button" class="btn-edit"   (click)="startEditSubTodo(sub)"           title="Edit subtask">✏️</button>

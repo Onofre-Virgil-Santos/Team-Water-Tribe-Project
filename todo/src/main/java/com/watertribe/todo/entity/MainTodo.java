@@ -33,7 +33,8 @@ public class MainTodo {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
+    
+    @Builder.Default
     @OneToMany(mappedBy = "mainTodo", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubTask> subTasks = new ArrayList<>();
 
@@ -47,5 +48,20 @@ public class MainTodo {
     @PreUpdate
     public void beforeUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void addSubTask(SubTask subTask) {
+        subTasks.add(subTask);
+        subTask.setMainTodo(this);
+    }
+
+    public void removeSubTask(Long subTaskId) {
+        subTasks.stream()
+                .filter(task -> task.getId().equals(subTaskId))
+                .findFirst()
+                .ifPresent(task -> {
+                    task.setMainTodo(null); 
+                    subTasks.remove(task);
+                });
     }
 }

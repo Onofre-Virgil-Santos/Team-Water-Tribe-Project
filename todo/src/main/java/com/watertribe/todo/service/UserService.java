@@ -1,6 +1,7 @@
 package com.watertribe.todo.service;
 
 import com.watertribe.todo.entity.User;
+import com.watertribe.todo.exception.LoginFailure;
 import com.watertribe.todo.exception.RegistrationFailure;
 import com.watertribe.todo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,17 +36,17 @@ public class UserService {
     }
 
     /**
-     * Validates credentials. Returns the User on success, null if username
-     * not found or password doesn't match.
+     * Validates credentials. Throws LoginFailure if the username is not found
+     * or the password does not match.
      */
     public User login(String username, String password) {
-        User user = userRepository.findByUsername(username).orElse(null);
-        if (user == null) {
-            return null;
-        }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new LoginFailure("Invalid username or password"));
+
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-            return null;
+            throw new LoginFailure("Invalid username or password");
         }
+
         return user;
     }
 }

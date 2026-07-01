@@ -10,11 +10,12 @@ import com.watertribe.todo.repository.SubTaskRepository;
 import com.watertribe.todo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SubTaskService {
 
     private final SubTaskRepository subTaskRepository;
@@ -32,10 +33,16 @@ public class SubTaskService {
                 .task(request.getTask())
                 .description(request.getDescription())
                 .completed(false)
-                .mainTodo(mainTodo)
                 .build();
 
-        return mapToResponse(subTaskRepository.save(subTask));
+        mainTodo.addSubTask(subTask);
+
+        MainTodo savedMainTodo = mainTodoRepository.saveAndFlush(mainTodo);
+        
+        List<SubTask> updatedTasks = savedMainTodo.getSubTasks();
+        SubTask savedSubTask = updatedTasks.get(updatedTasks.size() - 1);
+
+        return mapToResponse(savedSubTask);
     }
 
     public List<SubTaskResponse> getAllSubTasks(
@@ -78,20 +85,18 @@ public class SubTaskService {
         subTask.setDescription(request.getDescription());
         subTask.setCompleted(request.isCompleted());
 
-        return mapToResponse(subTaskRepository.save(subTask));
+        return mapToResponse(subTaskRepository.saveAndFlush(subTask));
     }
-
-    public void deleteSubTask(
-            Long mainTodoId,
-            Long id,
-            Long userId
-    ) {
+    
+    @Transactional
+    public void deleteSubTask(Long mainTodoId, Long id, Long userId) {
         MainTodo mainTodo = getMainTodoForUser(mainTodoId, userId);
 
-        SubTask subTask = subTaskRepository.findByIdAndMainTodo(id, mainTodo)
-                .orElseThrow(() -> new RuntimeException("Sub task not found"));
+        mainTodo.removeSubTask(id);
+        mainTodoRepository.saveAndFlush(mainTodo);
 
-        subTaskRepository.delete(subTask);
+        subTaskRepository.deleteById(id);
+        subTaskRepository.flush();
     }
 
     private MainTodo getMainTodoForUser(Long mainTodoId, Long userId) {
