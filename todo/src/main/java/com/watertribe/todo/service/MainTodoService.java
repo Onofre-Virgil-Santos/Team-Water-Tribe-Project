@@ -8,11 +8,13 @@ import com.watertribe.todo.repository.MainTodoRepository;
 import com.watertribe.todo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MainTodoService {
 
     private final MainTodoRepository mainTodoRepository;
@@ -31,7 +33,7 @@ public class MainTodoService {
                 .user(user)
                 .build();
 
-        MainTodo savedTodo = mainTodoRepository.save(mainTodo);
+        MainTodo savedTodo = mainTodoRepository.saveAndFlush(mainTodo);
 
         return mapToResponse(savedTodo);
     }
@@ -71,7 +73,7 @@ public class MainTodoService {
         mainTodo.setDescription(request.getDescription());
         mainTodo.setCompleted(request.isCompleted());
 
-        MainTodo updatedTodo = mainTodoRepository.save(mainTodo);
+        MainTodo updatedTodo = mainTodoRepository.saveAndFlush(mainTodo);
 
         return mapToResponse(updatedTodo);
     }
@@ -86,6 +88,7 @@ public class MainTodoService {
                 .orElseThrow(() -> new RuntimeException("Main todo not found"));
 
         mainTodoRepository.delete(mainTodo);
+        mainTodoRepository.flush();
     }
 
     private User getLoggedInUser(Long userId) {

@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { delay, switchMap } from 'rxjs/operators';
 import { MainTodoService } from '../../services/maintodo.service';
 import { MainTodo } from '../../models/maintodo.model';
-import { SubTodo} from '../../models/subtodo.model';
+import { SubTodo } from '../../models/subtodo.model';
 import { SubTodoService } from '../../services/subtodo.service';
 @Component({
   selector: 'app-todo',
@@ -121,9 +121,19 @@ export class Todo implements OnInit {
   }
 
   deleteTodo(id: number): void {
+    const previousTodos = this.todos();
+    this.todos.set(previousTodos.filter(t => t.id !== id));
+
     this.mainTodoService.deleteTodo(id).subscribe({
-      next: () => this.loadTodos(),
-      error: () => this.errorMessage.set('Failed to delete todo.'),
+      next: () => {
+        this.loadTodos();
+        this.subtodos.set([]);
+        this.expandedTodoId.set(null);
+      },
+      error: (err) => {
+        this.todos.set(previousTodos);
+        this.errorMessage.set(`Failed to delete todo. Please try again. ${err}`);
+      },
     });
   }
 
@@ -190,9 +200,13 @@ export class Todo implements OnInit {
   }
 
   deleteSubTodo(parentId: number, subId: number): void {
+    const currentSubtodos = this.subtodos();
+    this.subtodos.set(currentSubtodos.filter(s => s.id !== subId));
     this.subTodoService.deleteSubTodo(parentId, subId).subscribe({
-      next: () => this.loadSubTodos(parentId),
-      error: () => this.subtodoError.set('Failed to delete subtask.'),
+      error: (err) => {
+        this.subtodos.set(currentSubtodos);
+        this.subtodoError.set(`Failed to delete subtask. Please try again. ${err}`);
+      },
     });
   }
 
