@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @CucumberContextConfiguration
 @SpringBootTest(
     classes = TodoApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.NONE
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
 public class SpringIntegrationTest {
 }
