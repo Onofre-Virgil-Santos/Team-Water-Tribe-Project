@@ -18,7 +18,6 @@ repositories {
 }
 
 dependencies {
-	testImplementation ("io.rest-assured:rest-assured:6.0.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.hibernate.orm:hibernate-community-dialects")
 	implementation("org.xerial:sqlite-jdbc")
@@ -36,22 +35,22 @@ dependencies {
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	testImplementation ("io.rest-assured:rest-assured:6.0.0")
 	testImplementation("com.h2database:h2")
 	testCompileOnly("org.projectlombok:lombok")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testAnnotationProcessor("org.projectlombok:lombok")
 	testImplementation("com.h2database:h2:2.4.240")
 	// the core cucumber code
-    testImplementation("io.cucumber:cucumber-java:7.33.0")
+    testImplementation("io.cucumber:cucumber-java:7.34.4")
 	// the integration code for cucumber & junit
-    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.33.0")
+    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.34.4")
 	// the sub module that gives us access to the junit test suite feature
     testImplementation("org.junit.platform:junit-platform-suite:1.14.1")
-	// This gives access to the Selenium ecosystem
-	implementation("org.seleniumhq.selenium:selenium-java:4.45.0")
-	// This lets us inject our cucumber test resources into our step classes
-	implementation("io.cucumber:cucumber-spring:7.34.4")
+	// This gives access to the Selenium ecosystem	// This lets us inject our cucumber test resources into our step classes
+	testImplementation("io.cucumber:cucumber-spring:7.34.4")
+	// Selenium for browser automation E2E tests
+	testImplementation("org.seleniumhq.selenium:selenium-java:4.20.0")
+	testImplementation("io.rest-assured:rest-assured:6.0.0")
 }
 
 tasks.withType<Test> {
