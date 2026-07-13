@@ -148,7 +148,11 @@ public class TodoPage {
 
     public void expandTodo(String task) {
         WebElement todoRow = getTodoRowByTask(task);
-        todoRow.findElement(EXPAND_BTN).click();
+        // Only click expand if the panel is not already open
+        boolean alreadyExpanded = !driver.findElements(By.cssSelector(".subtodo-panel")).isEmpty();
+        if (!alreadyExpanded) {
+            todoRow.findElement(EXPAND_BTN).click();
+        }
         wait.until(ExpectedConditions.visibilityOfElementLocated(SUBTASK_PANEL));
     }
 
