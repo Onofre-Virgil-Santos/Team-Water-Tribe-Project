@@ -27,7 +27,8 @@ public class TodoPage {
     }
 
     public void open() {
-        driver.get("http://localhost:4200/todo");
+        driver.get("http://localhost:4200/home/todos");
+        wait.until(ExpectedConditions.elementToBeClickable(MAIN_TODO_INPUT));
     }
 
     public void createMainTodo(String task) {
@@ -42,7 +43,11 @@ public class TodoPage {
 
     public void expandTodo(String task) {
         WebElement todoRow = getTodoRowByTask(task);
-        todoRow.findElement(EXPAND_BTN).click();
+        // Only click expand if the panel is not already open
+        boolean alreadyExpanded = !driver.findElements(By.cssSelector(".subtodo-panel")).isEmpty();
+        if (!alreadyExpanded) {
+            todoRow.findElement(EXPAND_BTN).click();
+        }
         wait.until(ExpectedConditions.visibilityOfElementLocated(SUBTASK_PANEL));
     }
 
@@ -113,10 +118,14 @@ public class TodoPage {
     }
 
     public boolean isSubtaskCompleted(String task) {
-        WebElement span = wait.until(ExpectedConditions.presenceOfElementLocated(
-            By.xpath("//span[contains(@class,'subtodo-task') and text()='" + task + "']")
-        ));
-        return span.getAttribute("class").contains("strikethrough");
+        // Wait for Angular to apply the strikethrough class after the DOM re-renders
+        By xpath = By.xpath("//span[contains(@class,'subtodo-task') and contains(@class,'strikethrough') and text()='" + task + "']");
+        try {
+            wait.until(ExpectedConditions.presenceOfElementLocated(xpath));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public boolean isEmptySubtaskMessageDisplayed() {
